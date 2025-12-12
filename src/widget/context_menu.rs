@@ -261,8 +261,8 @@ where
         }
 
         let position = s.cursor_position;
-        let content = (self.overlay)();
-        content.as_widget().diff(&mut state.children[1]);
+        let mut content = (self.overlay)();
+        content.as_widget_mut().diff(&mut state.children[1]);
         Some(
             ContextMenuOverlay::new(
                 position + translation,
@@ -270,6 +270,7 @@ where
                 content,
                 &self.class,
                 s,
+                self.left_click,
             )
             .overlay(),
         )
