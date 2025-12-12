@@ -276,6 +276,7 @@ where
                 content,
                 &self.class,
                 s,
+                self.left_click,
             )
             .overlay(),
         )

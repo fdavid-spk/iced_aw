@@ -40,6 +40,8 @@ pub struct ContextMenuOverlay<
     class: &'a Theme::Class<'b>,
     /// The state shared between [`ContextMenu`](crate::widget::ContextMenu) and [`ContextMenuOverlay`].
     state: &'a mut context_menu::State,
+    /// Whether left-click was enabled on the parent context menu.
+    left_click_enabled: bool,
 }
 
 impl<'a, 'b, Message, Theme, Renderer> ContextMenuOverlay<'a, 'b, Message, Theme, Renderer>
@@ -56,6 +58,7 @@ where
         content: C,
         class: &'a <Theme as Catalog>::Class<'b>,
         state: &'a mut context_menu::State,
+        left_click_enabled: bool,
     ) -> Self
     where
         C: Into<Element<'a, Message, Theme, Renderer>>,
@@ -66,6 +69,7 @@ where
             content: content.into(),
             class,
             state,
+            left_click_enabled,
         }
     }
 
@@ -190,8 +194,10 @@ where
                 }
             }
 
-            Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
-                // close when released because because button send message on release
+            // Only close on left-button release when left-click is NOT enabled.
+            Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
+                if !self.left_click_enabled =>
+            {
                 self.state.show = false;
 
                 capture_event = true;
