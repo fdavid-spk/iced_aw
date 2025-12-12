@@ -54,6 +54,8 @@ pub struct ContextMenu<
     overlay: Overlay,
     /// The style of the [`ContextMenu`].
     class: Theme::Class<'a>,
+    /// Flag enabling gitleft click to open the [`ContextMenu`].
+    left_click: bool,
 }
 
 impl<'a, Overlay, Message, Theme, Renderer> ContextMenu<'a, Overlay, Message, Theme, Renderer>
@@ -76,7 +78,15 @@ where
             underlay: underlay.into(),
             overlay,
             class: Theme::default(),
+            left_click: false,
         }
+    }
+
+    /// Enables left click to open the [`ContextMenu`].
+    #[must_use]
+    pub fn with_left_click(mut self) -> Self {
+        self.left_click = true;
+        self
     }
 
     /// Sets the style of the [`ContextMenu`].
@@ -189,7 +199,14 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
-        if *event == Event::Mouse(mouse::Event::ButtonPressed(Button::Right)) {
+        let event_condition = if self.left_click {
+            *event == Event::Mouse(mouse::Event::ButtonPressed(Button::Right))
+                || *event == Event::Mouse(mouse::Event::ButtonPressed(Button::Left))
+        } else {
+            *event == Event::Mouse(mouse::Event::ButtonPressed(Button::Right))
+        };
+
+        if event_condition {
             let bounds = layout.bounds();
 
             if cursor.is_over(bounds) {
