@@ -57,6 +57,8 @@ pub struct ContextMenu<
     class: Theme::Class<'a>,
     /// Force the menu to be shown (for testing purposes). If None, uses internal state.
     force_open: Option<bool>,
+    /// Flag enabling left click to open the [`ContextMenu`].
+    left_click: bool,
 }
 
 impl<'a, Overlay, Message, Theme, Renderer> ContextMenu<'a, Overlay, Message, Theme, Renderer>
@@ -81,6 +83,7 @@ where
             overlay_instance: None,
             class: Theme::default(),
             force_open: None,
+            left_click: false,
         }
     }
 
@@ -277,6 +280,7 @@ where
                 content,
                 &self.class,
                 s,
+                self.left_click,
             )
             .overlay(),
         )

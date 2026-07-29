@@ -40,6 +40,8 @@ pub struct ContextMenuOverlay<
     class: &'a Theme::Class<'b>,
     /// The state shared between [`ContextMenu`](crate::widget::ContextMenu) and [`ContextMenuOverlay`].
     state: &'a mut context_menu::State,
+    /// Whether left-click was enabled on the parent context menu.
+    left_click_enabled: bool,
 }
 
 impl<'a, 'b, Message, Theme, Renderer> ContextMenuOverlay<'a, 'b, Message, Theme, Renderer>
@@ -56,6 +58,7 @@ where
         content: &'a mut Element<'b, Message, Theme, Renderer>,
         class: &'a <Theme as Catalog>::Class<'b>,
         state: &'a mut context_menu::State,
+        left_click_enabled: bool,
     ) -> Self {
         ContextMenuOverlay {
             position,
@@ -63,6 +66,7 @@ where
             content,
             class,
             state,
+            left_click_enabled,
         }
     }
 
@@ -187,8 +191,10 @@ where
                 }
             }
 
-            Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
-                // close when released because because button send message on release
+            // Only close on left-button release when left-click is NOT enabled.
+            Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
+                if !self.left_click_enabled =>
+            {
                 self.state.show = false;
 
                 capture_event = true;
@@ -291,7 +297,7 @@ mod tests {
         let mut state = create_test_state();
         let position = Point::new(100.0, 100.0);
 
-        let overlay = ContextMenuOverlay::new(position, &mut tree, &mut content, class, &mut state);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, &mut content, class, &mut state, false);
 
         assert_eq!(overlay.position, position);
     }
@@ -311,13 +317,14 @@ mod tests {
         let mut state3 = create_test_state();
 
         let overlay1 =
-            ContextMenuOverlay::new(Point::ORIGIN, &mut tree1, &mut content1, class, &mut state1);
+            ContextMenuOverlay::new(Point::ORIGIN, &mut tree1, &mut content1, class, &mut state1, false);
         let overlay2 = ContextMenuOverlay::new(
             Point::new(500.0, 300.0),
             &mut tree2,
             &mut content2,
             class,
             &mut state2,
+            false
         );
         let overlay3 = ContextMenuOverlay::new(
             Point::new(1000.0, 800.0),
@@ -325,6 +332,7 @@ mod tests {
             &mut content3,
             class,
             &mut state3,
+            false
         );
 
         assert_eq!(overlay1.position, Point::ORIGIN);
@@ -341,7 +349,7 @@ mod tests {
         let mut state = create_test_state();
         let position = Point::new(100.0, 100.0);
 
-        let overlay = ContextMenuOverlay::new(position, &mut tree, &mut content, class, &mut state);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, &mut content, class, &mut state, false);
         let _overlay_element = overlay.overlay();
 
         // If we get here without panic, the conversion worked
@@ -410,7 +418,7 @@ mod tests {
         let mut state = create_test_state();
         let position = Point::new(-50.0, -100.0);
 
-        let overlay = ContextMenuOverlay::new(position, &mut tree, &mut content, class, &mut state);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, &mut content, class, &mut state, false);
 
         assert_eq!(overlay.position.x, -50.0);
         assert_eq!(overlay.position.y, -100.0);
@@ -425,7 +433,7 @@ mod tests {
         let mut state = create_test_state();
         let position = Point::new(123.456, 789.012);
 
-        let overlay = ContextMenuOverlay::new(position, &mut tree, &mut content, class, &mut state);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, &mut content, class, &mut state, false);
 
         assert_eq!(overlay.position.x, 123.456);
         assert_eq!(overlay.position.y, 789.012);
